@@ -1,1 +1,1 @@
-# Angular project
+# Financial control system using Angular/Django
