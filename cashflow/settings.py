@@ -128,6 +128,8 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
     'cashflow',
     'money',
+    'bootstrapform',
+    'googlecharts',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -158,3 +160,6 @@ LOGGING = {
         },
     }
 }
+
+LOGIN_URL='/login'
+LOGIN_REDIRECT_URL='/dashboard'

@@ -16,7 +16,7 @@ class Account(IdentModel):
     )
 
     name = models.CharField(max_length=100)
-    parent = models.ForeignKey('self')
+    parent = models.ForeignKey('self', blank=True, null=True)
     type = models.CharField(max_length=1, choices=TYPE_CHOICES)
     status = models.BooleanField()
 
@@ -25,16 +25,19 @@ class Account(IdentModel):
 
 class Bank(IdentModel):
     name = models.CharField(max_length=100)
-    limit = models.FloatField()
+    limit = models.FloatField(default=0)
 
     def __unicode__(self):
         return self.name
 
 class Person(IdentModel):
-	name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100)
+    doc = models.CharField(max_length=20,blank=True, null=True)
+    status = models.BooleanField()
+    default_account = models.ForeignKey(Account, blank=True, null=True)
 
-	def __unicode__(self):
-		return self.name
+    def __unicode__(self):
+        return self.name
 
 
 class Entry(IdentModel):
@@ -44,9 +47,9 @@ class Entry(IdentModel):
     name = models.CharField(max_length=100)
     amount = models.FloatField()
     pay_date = models.DateField()
-    paid_date = models.DateField()
-    doc = models.CharField(max_length=20)
-    status = models.CharField(max_length=1)
+    paid_date = models.DateField(blank=True, null=True)
+    doc = models.CharField(max_length=20, blank=True, null=True)
+    status = models.CharField(max_length=1, default=0)
 
     def __unicode__(self):
         return self.name
