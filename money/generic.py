@@ -1,6 +1,15 @@
 from django.views import generic
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required, permission_required
+from django.http import HttpResponseRedirect
+
+class IdentModelFormMixin(generic.edit.ModelFormMixin):
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.user = self.request.user
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
 
 class RestrictedListView(generic.ListView):
     ''' Generic list view that checks permissions '''
@@ -11,7 +20,7 @@ class RestrictedListView(generic.ListView):
             return super(RestrictedListView, self).dispatch(request, *args, **kwargs)
         return wrapper(request, *args, **kwargs)
 
-class RestrictedUpdateView(generic.UpdateView):
+class RestrictedUpdateView(generic.UpdateView, IdentModelFormMixin):
     ''' Generic update view that checks permissions '''
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
@@ -20,7 +29,7 @@ class RestrictedUpdateView(generic.UpdateView):
             return super(RestrictedUpdateView, self).dispatch(request, *args, **kwargs)
         return wrapper(request, *args, **kwargs)
 
-class RestrictedCreateView(generic.CreateView):
+class RestrictedCreateView(generic.CreateView, IdentModelFormMixin):
     ''' Generic create view that checks permissions '''
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
@@ -43,28 +52,28 @@ class LoginRequired(generic.View):
     def dispatch(self, request, *args, **kwargs):
         return super(LoginRequired, self).dispatch(request, *args, **kwargs)
 
-class ModelFormWithListView(RestrictedListView, generic.edit.ModelFormMixin, generic.edit.ProcessFormView):
+class ModelFormWithListView(RestrictedListView, IdentModelFormMixin, generic.edit.ProcessFormView):
 
-	def post(self, request, *args, **kwargs):
-		try:
-			self.object = self.get_object()
-		except:
-			self.object = None
-		return super(ModelFormWithListView, self).post(request, *args, **kwargs)
+    def post(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+        except:
+            self.object = None
+        return super(ModelFormWithListView, self).post(request, *args, **kwargs)
 
-	def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs):
 
-		self.object_list = self.get_queryset()
+        self.object_list = self.get_queryset()
 
-		try:
-			self.object = self.get_object()
-		except:
-			self.object = None
+        try:
+            self.object = self.get_object()
+        except:
+            self.object = None
 
-		kwargs.update({
-			'object_list' : self.object_list,
-			'form' : self.get_form(self.get_form_class()),
-			'object' : self.object
-		})
+        kwargs.update({
+            'object_list' : self.object_list,
+            'form' : self.get_form(self.get_form_class()),
+            'object' : self.object
+        })
 
-		return super(ModelFormWithListView, self).get_context_data(**kwargs)
+        return super(ModelFormWithListView, self).get_context_data(**kwargs)
